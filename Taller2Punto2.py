@@ -65,7 +65,7 @@ class thetaFilter:
         cv2.imshow("Imagen filtrada a 0 grados", image_filtered1)
         cv2.waitKey(0)
 
-        #filtro 45 grados
+        #Filtro 45 grados
         # band pass filter mask
         band_pass_mask1 = np.zeros_like(self. image_gray)
         idx_low = 180 * (np.arctan2(col_iter - half_size, row_iter - half_size)) / np.pi > (self.theta2 - self.theta_delta)
@@ -84,7 +84,7 @@ class thetaFilter:
         cv2.imshow("Imagen filtrada a 45 grados", image_filtered2)
         cv2.waitKey(0)
 
-        # Filtro 3 90°
+        #Filtro  90 grados
         # band pass filter mask
         band_pass_mask1 = np.zeros_like(self.image_gray)
         idx_low =180*(np.arctan2(col_iter - half_size, row_iter - half_size))/np.pi > (self.theta3 - self.theta_delta)
@@ -103,12 +103,9 @@ class thetaFilter:
         cv2.imshow("Imagen filtrada a 90 grados", image_filtered3)
         cv2.waitKey(0)
 
-    # Filtro 4 135°
+        # Filtro 135 grados
         # band pass filter mask
         band_pass_mask1 = np.zeros_like(self.image_gray)
-        dt= 5 # it should less than freq_cut_off_high
-        t= 135 # it should less than 1
-
         idx_low =180*(np.arctan2(col_iter - half_size, row_iter - half_size))/np.pi > (self.theta4 - self.theta_delta)
         idx_high = 180 * (np.arctan2(col_iter - half_size, row_iter - half_size)) / np.pi < (self.theta4 + self.theta_delta)
         idx_bp = np.bitwise_and(idx_low, idx_high)
