@@ -4,7 +4,6 @@ Este archivo contiene la definición de la clase thetaFilter y sus respectivos m
 Corresponde al punto 2 del taller, donde a partir de 4 filtros se promedia una imagen y se obtiene una nueva
 """
 
-
 import cv2
 import sys
 import os
@@ -17,9 +16,10 @@ class thetaFilter:
         path = sys.argv[1]
         image_name = sys.argv[2]
         path_file = os.path.join(path, image_name)
-        image = cv2.imread(path_file)
-        self.image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        cv2.imshow("Original imagen",image)
+        self.image = cv2.imread(path_file)
+        self.image_gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
+        cv2.imshow("Original imagen", self.image)
+
 
     # Método que recibe los valores de teta de cada filtro y delta de teta
     def set_theta(self,theta1,theta2,theta3,theta4,theta_delta):
@@ -44,15 +44,20 @@ class thetaFilter:
         enum_rows = np.linspace(0, num_rows - 1, num_rows)
         enum_cols = np.linspace(0, num_cols - 1, num_cols)
         col_iter, row_iter = np.meshgrid(enum_cols, enum_rows)
-        half_size = num_rows / 2 - 1  # here we assume num_rows = num_columns
+        half_size = num_rows / 2   # here we assume num_rows = num_columns
 
         # Filtro 0 grados
         # band pass filter mask
         band_pass_mask1 = np.zeros_like(self.image_gray)
-        idx_low = 180 * (np.arctan2(col_iter - half_size, row_iter - half_size)) / np.pi > (self.theta1 - self.theta_delta)
-        idx_high = 180 * (np.arctan2(col_iter - half_size, row_iter - half_size)) / np.pi < (self.theta1 + self.theta_delta)
+        idx_low = 180 * (np.arctan2(row_iter - half_size, col_iter - half_size)) / np.pi + 180 > (self.theta1 - self.theta_delta)
+        idx_high = 180 * (np.arctan2(row_iter - half_size, col_iter - half_size)) / np.pi + 180 < (self.theta1 + self.theta_delta)
         idx_bp = np.bitwise_and(idx_low, idx_high)
-        band_pass_mask1[idx_bp] = 1
+        idx_low1 = 180 * (np.arctan2(row_iter - half_size, col_iter - half_size)) / np.pi + 180 > (self.theta1 + 180 - self.theta_delta)
+        idx_high1 = 180 * (np.arctan2(row_iter - half_size, col_iter - half_size)) / np.pi + 180 < (self.theta1 + 180 + self.theta_delta)
+        idx_bp1 = np.bitwise_and(idx_low1, idx_high1)
+        idx_bpf = np.bitwise_or(idx_bp, idx_bp1)
+        band_pass_mask1[idx_bpf] = 1
+        band_pass_mask1[int(half_size), int(half_size)] = 1
 
         # filtering via FFT
         mask = band_pass_mask1  # can also use high or band pass mask
@@ -63,15 +68,20 @@ class thetaFilter:
 
         cv2.imshow("Respuesta en frecuencia del filtro a 0 grados", 255 * mask)
         cv2.imshow("Imagen filtrada a 0 grados", image_filtered1)
-        cv2.waitKey(0)
+
 
         #Filtro 45 grados
         # band pass filter mask
-        band_pass_mask1 = np.zeros_like(self. image_gray)
-        idx_low = 180 * (np.arctan2(col_iter - half_size, row_iter - half_size)) / np.pi > (self.theta2 - self.theta_delta)
-        idx_high = 180 * (np.arctan2(col_iter - half_size, row_iter - half_size)) / np.pi < (self.theta2 + self.theta_delta)
+        band_pass_mask1 = np.zeros_like(self.image_gray)
+        idx_low = 180 * (np.arctan2(row_iter - half_size, col_iter - half_size)) / np.pi + 180 > (self.theta2 - self.theta_delta)
+        idx_high = 180 * (np.arctan2(row_iter - half_size, col_iter - half_size)) / np.pi + 180 < (self.theta2 + self.theta_delta)
         idx_bp = np.bitwise_and(idx_low, idx_high)
-        band_pass_mask1[idx_bp] = 1
+        idx_low1 = 180 * (np.arctan2(row_iter - half_size, col_iter - half_size)) / np.pi + 180 > (self.theta2 + 180 - self.theta_delta)
+        idx_high1 = 180 * (np.arctan2(row_iter - half_size, col_iter - half_size)) / np.pi + 180 < (self.theta2 + 180 + self.theta_delta)
+        idx_bp1 = np.bitwise_and(idx_low1, idx_high1)
+        idx_bpf = np.bitwise_or(idx_bp, idx_bp1)
+        band_pass_mask1[idx_bpf] = 1
+        band_pass_mask1[int(half_size), int(half_size)] = 1
 
         # filtering via FFT
         mask = band_pass_mask1  # can also use high or band pass mask
@@ -82,15 +92,20 @@ class thetaFilter:
 
         cv2.imshow("Respuesta en frecuencia del filtro a 45 grados", 255 * mask)
         cv2.imshow("Imagen filtrada a 45 grados", image_filtered2)
-        cv2.waitKey(0)
+
 
         #Filtro  90 grados
         # band pass filter mask
         band_pass_mask1 = np.zeros_like(self.image_gray)
-        idx_low =180*(np.arctan2(col_iter - half_size, row_iter - half_size))/np.pi > (self.theta3 - self.theta_delta)
-        idx_high = 180 * (np.arctan2(col_iter - half_size, row_iter - half_size)) / np.pi < (self.theta3 + self.theta_delta)
+        idx_low = 180 * (np.arctan2(row_iter - half_size, col_iter - half_size)) / np.pi + 180 > (self.theta3 - self.theta_delta)
+        idx_high = 180 * (np.arctan2(row_iter - half_size, col_iter - half_size)) / np.pi + 180 < (self.theta3 + self.theta_delta)
         idx_bp = np.bitwise_and(idx_low, idx_high)
-        band_pass_mask1[idx_bp] = 1
+        idx_low1 = 180 * (np.arctan2(row_iter - half_size, col_iter - half_size)) / np.pi + 180 > (self.theta3 + 180 - self.theta_delta)
+        idx_high1 = 180 * (np.arctan2(row_iter - half_size, col_iter - half_size)) / np.pi + 180 < (self.theta3 + 180 + self.theta_delta)
+        idx_bp1 = np.bitwise_and(idx_low1, idx_high1)
+        idx_bpf = np.bitwise_or(idx_bp, idx_bp1)
+        band_pass_mask1[idx_bpf] = 1
+        band_pass_mask1[int(half_size), int(half_size)] = 1
 
         # filtering via FFT
         mask = band_pass_mask1  # can also use high or band pass mask
@@ -101,16 +116,20 @@ class thetaFilter:
 
         cv2.imshow("Respuesta en frecuencia del filtro a 90 grados", 255 * mask)
         cv2.imshow("Imagen filtrada a 90 grados", image_filtered3)
-        cv2.waitKey(0)
+
 
         # Filtro 135 grados
         # band pass filter mask
         band_pass_mask1 = np.zeros_like(self.image_gray)
-        idx_low =180*(np.arctan2(col_iter - half_size, row_iter - half_size))/np.pi > (self.theta4 - self.theta_delta)
-        idx_high = 180 * (np.arctan2(col_iter - half_size, row_iter - half_size)) / np.pi < (self.theta4 + self.theta_delta)
+        idx_low = 180 * (np.arctan2(row_iter - half_size, col_iter - half_size)) / np.pi + 180 > (self.theta4 - self.theta_delta)
+        idx_high = 180 * (np.arctan2(row_iter - half_size, col_iter - half_size)) / np.pi + 180 < (self.theta4 + self.theta_delta)
         idx_bp = np.bitwise_and(idx_low, idx_high)
-        band_pass_mask1[idx_bp] = 1
-
+        idx_low1 = 180 * (np.arctan2(row_iter - half_size, col_iter - half_size)) / np.pi + 180 > (self.theta4 + 180 - self.theta_delta)
+        idx_high1 = 180 * (np.arctan2(row_iter - half_size, col_iter - half_size)) / np.pi + 180 < (self.theta4 + 180 + self.theta_delta)
+        idx_bp1 = np.bitwise_and(idx_low1, idx_high1)
+        idx_bpf = np.bitwise_or(idx_bp, idx_bp1)
+        band_pass_mask1[idx_bpf] = 1
+        band_pass_mask1[int(half_size), int(half_size)] = 1
         # filtering via FFT
         mask = band_pass_mask1  # can also use high or band pass mask
         fft_filtered = image_gray_fft_shift * mask
@@ -120,8 +139,9 @@ class thetaFilter:
 
         cv2.imshow("Respuesta en frecuencia del filtro a 135 grados", 255 * mask)
         cv2.imshow("Imagen filtrada a 135 grados", image_filtered4)
-        cv2.waitKey(0)
 
+
+        cv2.imshow("Original imagen", self.image)
         promedio = (image_filtered1+image_filtered2+image_filtered3+image_filtered4)/4
         cv2.imshow("Promedio imagenes", promedio)
         cv2.waitKey(0)
@@ -133,7 +153,7 @@ if __name__ == '__main__':
   theta2 = 45
   theta3 = 90
   theta4 = 135
-  theta_delta = 5
+  theta_delta = 30
   Filter.set_theta(theta1,theta2,theta3,theta4,theta_delta)
   Filter.filtering()
 

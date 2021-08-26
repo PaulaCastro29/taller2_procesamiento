@@ -15,9 +15,9 @@ class thetaFilter:
         path = sys.argv[1]
         image_name = sys.argv[2]
         path_file = os.path.join(path, image_name)
-        image = cv2.imread(path_file)
-        self.image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        cv2.imshow("Original image",image)
+        self.image = cv2.imread(path_file)
+        self.image_gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
+
 
     # Método que recibe los valores de teta y delta de teta ingresados por el usuario
     def set_theta(self,theta,theta_delta):
@@ -41,15 +41,20 @@ class thetaFilter:
         enum_rows = np.linspace(0, num_rows - 1, num_rows)
         enum_cols = np.linspace(0, num_cols - 1, num_cols)
         col_iter, row_iter = np.meshgrid(enum_cols, enum_rows)
-        half_size = num_rows / 2 - 1  # here we assume num_rows = num_columns
+        half_size = num_rows / 2  # here we assume num_rows = num_columns
 
         # Filtro
         # band pass filter mask
         band_pass_mask1 = np.zeros_like(self.image_gray)
-        idx_low = 180 * (np.arctan2(col_iter - half_size, row_iter - half_size)) / np.pi > (self.theta - self.theta_delta)
-        idx_high = 180 * (np.arctan2(col_iter - half_size, row_iter - half_size)) / np.pi < (self.theta + self.theta_delta)
+        idx_low = 180 * (np.arctan2(row_iter - half_size, col_iter - half_size)) / np.pi +180 > (self.theta - self.theta_delta)
+        idx_high = 180 * (np.arctan2(row_iter - half_size, col_iter - half_size)) / np.pi +180 < (self.theta + self.theta_delta)
         idx_bp = np.bitwise_and(idx_low, idx_high)
-        band_pass_mask1[idx_bp] = 1
+        idx_low1 = 180 * (np.arctan2(row_iter - half_size, col_iter - half_size)) / np.pi +180 > (self.theta + 180 - self.theta_delta)
+        idx_high1 = 180 * (np.arctan2(row_iter - half_size, col_iter - half_size)) / np.pi +180 < (self.theta + 180 + self.theta_delta)
+        idx_bp1 = np.bitwise_and(idx_low1, idx_high1)
+        idx_bpf = np.bitwise_or(idx_bp, idx_bp1)
+        band_pass_mask1[idx_bpf] = 1
+        band_pass_mask1[int(half_size),int(half_size)] = 1
 
         # filtering via FFT
         mask = band_pass_mask1  # can also use high or band pass mask
@@ -58,6 +63,7 @@ class thetaFilter:
         image_filtered1 = np.absolute(image_filtered1)
         image_filtered1 /= np.max(image_filtered1)
 
+        cv2.imshow("Original image", self.image)
         cv2.imshow("Respuesta del filtro°", 255 * mask)
         cv2.imshow("Imagen filtrada°", image_filtered1)
         cv2.waitKey(0)
