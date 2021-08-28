@@ -143,6 +143,8 @@ class thetaFilter:
 
         cv2.imshow("Original imagen", self.image)
         promedio = (image_filtered1+image_filtered2+image_filtered3+image_filtered4)/4
+        promedio = promedio-promedio.min()
+        promedio = promedio/promedio.max()
         cv2.imshow("Promedio imagenes", promedio)
         cv2.waitKey(0)
         cv2.imwrite('promedio.png', promedio)
